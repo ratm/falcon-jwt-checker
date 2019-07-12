@@ -12,7 +12,7 @@ class JwtChecker:
     """
 
     def __init__(self, secret='', algorithm='', exempt_routes=None,
-                 exempt_methods=None, issuer=None, audience=None, leeway=0):
+                 exempt_methods=None, issuer=None, audience=None, leeway=0, token_type='Bearer'):
         """Set up the JwtChecker, including the expected secret,
         algorithm, audience, and any exempted routes and exempted methods
         for which a jwt shall not be required.
@@ -26,6 +26,7 @@ class JwtChecker:
         self.issuer = issuer
         self.audience = audience
         self.leeway = leeway
+        self.token_type = token_type
 
         algorithms = [
             'HS256', 'HS384', 'HS512',
@@ -45,7 +46,7 @@ class JwtChecker:
         if req.path in self.exempt_routes or req.method in self.exempt_methods:
             return
 
-        token = req.headers.get('AUTHORIZATION', '').partition('Bearer ')[2]
+        token = req.headers.get('AUTHORIZATION', '').partition('%s ' % self.token_type)[2]
 
         try:
             claims = jwt.decode(token,
